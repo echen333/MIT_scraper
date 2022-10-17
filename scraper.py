@@ -3,50 +3,56 @@ from bs4 import BeautifulSoup
 
 URL = "https://mitadmissions.org/blogs/page/"
 PAGE_LIMIT = 10
+ITER_PER = 5
 SORT_BY = "date" # date, title, comments, responses
 
-blogs = []
-blog_links = []
-outside_links = []
-num_comments = []
-num_responses = []
 
 s = requests.Session()
 
-for i in range(1, PAGE_LIMIT + 1):
-    page = s.get(URL + str(i))
+for iter in range(ITER_PER):
+    blogs = []
+    blog_links = []
+    outside_links = []
+    num_comments = []
+    num_responses = []
 
-    soup = BeautifulSoup(page.content, "lxml")
+    for i in range(1, PAGE_LIMIT + 1):
+        page = s.get(URL + str(iter*PAGE_LIMIT + i))
+        print("Page " + str(iter*PAGE_LIMIT + i) + " status: " + str(page.status_code))
 
-    results = soup.find_all("a", {"class": "post-tease__h__link"})
+        soup = BeautifulSoup(page.content, "lxml")
 
-    for result in results:
-        blogs.append(result.get_text())
-        blog_links.append(result["href"])
+        results = soup.find_all("a", {"class": "post-tease__h__link"})
 
-print(blogs)
-print(blog_links)
+        for result in results:
+            blogs.append(result.get_text())
+            blog_links.append(result["href"])
 
-for i in range(len(blog_links)):
-    page = s.get(blog_links[i])
+    print(blogs)
+    print(blog_links)
 
-    soup = BeautifulSoup(page.content, "lxml")
+    for i in range(len(blog_links)):
+        page = s.get(blog_links[i])
 
-    results = soup.find_all("a")
+        soup = BeautifulSoup(page.content, "lxml")
 
-    for result in results:
-        outside_links.append(result["href"])
+        results = soup.find_all("a")
 
-outside_links = list(set(outside_links))
-outside_links.sort()
+        for result in results:
+            outside_links.append(result["href"])
 
-f = open("blogs.txt", "w")
-for i in range(len(blogs)):
-    f.write(blogs[i] + "\n")
-    f.write(blog_links[i])
-f.close()
+    outside_links = list(set(outside_links))
+    outside_links.sort()
 
-f = open("outside_links.txt", "w")
-for link in outside_links:
-    f.write(link + "\n")
-f.close()
+    f = open(f"blogs_{iter}.txt", "w")
+    for i in range(len(blogs)):
+        f.write(blogs[i] + "\n")
+        f.write(blog_links[i])
+    f.close()
+
+    f = open(f"outside_links_{iter}.txt", "w")
+    for link in outside_links:
+        f.write(link + "\n")
+    f.close()
+
+
