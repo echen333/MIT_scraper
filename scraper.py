@@ -11,10 +11,12 @@ outside_links = []
 num_comments = []
 num_responses = []
 
-for i in range(1, PAGE_LIMIT + 1):
-    page = requests.get(URL + str(i))
+s = requests.Session()
 
-    soup = BeautifulSoup(page.content, "html.parser")
+for i in range(1, PAGE_LIMIT + 1):
+    page = s.get(URL + str(i))
+
+    soup = BeautifulSoup(page.content, "lxml")
 
     results = soup.find_all("a", {"class": "post-tease__h__link"})
 
@@ -26,9 +28,9 @@ print(blogs)
 print(blog_links)
 
 for i in range(len(blog_links)):
-    page = requests.get(blog_links[i])
+    page = s.get(blog_links[i])
 
-    soup = BeautifulSoup(page.content, "html.parser")
+    soup = BeautifulSoup(page.content, "lxml")
 
     results = soup.find_all("a")
 
